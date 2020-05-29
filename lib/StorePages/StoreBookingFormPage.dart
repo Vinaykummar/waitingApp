@@ -49,7 +49,8 @@ class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
                     height: 10,
                   ),
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Avg Waiting Time'),
+                    decoration: InputDecoration(
+                        labelText: 'Avg Waiting Time In Minutes'),
                     onSaved: (value) => _avgTime = value,
                     keyboardType: TextInputType.number,
                   ),

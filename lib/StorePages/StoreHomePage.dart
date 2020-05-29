@@ -12,6 +12,7 @@ class StoreHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = Provider.of<AuthProvider>(context);
     print(TimeHelpers().todaysDate());
+
     int waitingTime;
     String label;
 
@@ -19,6 +20,7 @@ class StoreHomePage extends StatelessWidget {
         stream: Firestore.instance
             .document(currentUser.user.userDocumentPath)
             .collection('bookings')
+            .where('storeUid', isEqualTo: currentUser.user.uid)
             .where('date', isEqualTo: TimeHelpers().todaysDate())
             .where('isBookingOpened', isEqualTo: true)
             .snapshots(),
@@ -81,6 +83,27 @@ class StoreHomePage extends StatelessWidget {
                               .document(
                                   snapshot.data.documents[0].reference.path)
                               .setData({'customers': present}, merge: true);
+
+                          QuerySnapshot bookedCustomers = await Firestore
+                              .instance
+                              .document(
+                                  snapshot.data.documents[0].reference.path)
+                              .collection('customers')
+                              .getDocuments();
+
+                          bookedCustomers.documents
+                              .forEach((DocumentSnapshot document) async {
+                            int presentTokenNo = document.data['tokenNo'];
+                            presentTokenNo -= 1;
+                            await Firestore.instance
+                                .document(document.data['visitDocPath'])
+                                .setData({'tokenNo': presentTokenNo},
+                                    merge: true);
+                            await Firestore.instance
+                                .document(document.reference.path)
+                                .setData({'tokenNo': presentTokenNo},
+                                    merge: true);
+                          });
                         },
                         child: Text(
                           'Decrease Customer by -1',
@@ -170,8 +193,8 @@ class StoreHomePage extends StatelessWidget {
                         onPressed: () async {
                           await Firestore.instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
-                              .delete();
+                              snapshot.data.documents[0].reference.path)
+                              .setData({'isBookingOpened': false}, merge: true);
                         },
                         child: Text(
                           'Close booking',
@@ -183,29 +206,80 @@ class StoreHomePage extends StatelessWidget {
                   ),
                 );
               }
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text("No Bookings available Today"),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => StoreBookingFormPage(),
-                        ));
-                      },
-                      child: Text(
-                        'Start Booking',
-                        style: TextStyle(color: Colors.white),
+              return StreamBuilder<DocumentSnapshot>(
+                  stream: Firestore.instance.document(
+                      currentUser.user.userDocumentPath).snapshots(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.none:
+                      // TODO: Handle this case.
+                        break;
+                      case ConnectionState.waiting:
+                      // TODO: Handle this case.
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                        break;
+                      case ConnectionState.active:
+                      // TODO: Handle this case.
+                        if (snapshot.data['isStoreOpened'] == true) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text("No Bookings available Today"),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                RaisedButton(
+                                  onPressed: () {},
+                                  child: Text('Start Booking'),
+                                  color: Colors.indigo,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                RaisedButton(
+                                  onPressed: () async {
+                                    await Firestore.instance.document(
+                                        snapshot.data.reference.path).setData({
+                                      'isStoreOpened': false
+                                    }, merge: true);
+                                  },
+                                  child: Text('Close Store'),
+                                  color: Colors.red,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return RaisedButton(
+                          onPressed: () async {
+                            await Firestore.instance.document(
+                                snapshot.data.reference.path).setData({
+                              'isStoreOpened': true
+                            }, merge: true);
+                          },
+                          child: Text('Open Store'),
+                          color: Colors.green,
+                        );
+                        break;
+                      case ConnectionState.done:
+                      // TODO: Handle this case.
+                        break;
+                    }
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text("No Bookings available Today"),
+
+                        ],
                       ),
-                      color: Colors.indigo,
-                    )
-                  ],
-                ),
+                    );
+                  }
               );
+
               break;
             case ConnectionState.done:
               // TODO: Handle this case.
@@ -214,16 +288,10 @@ class StoreHomePage extends StatelessWidget {
           }
           return Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text("No Bookings available Today"),
-                SizedBox(
-                  height: 10,
-                ),
-                RaisedButton(
-                  onPressed: () {},
-                  child: Text('Start Booking'),
-                  color: Colors.indigo,
-                )
+
               ],
             ),
           );

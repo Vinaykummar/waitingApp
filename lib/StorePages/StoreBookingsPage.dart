@@ -12,6 +12,7 @@ class StoreBookingsPage extends StatelessWidget {
         stream: Firestore.instance
             .document(currentUser.user.userDocumentPath)
             .collection('bookings')
+            .where('storeUid', isEqualTo: currentUser.user.uid)
             .snapshots(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
@@ -27,7 +28,7 @@ class StoreBookingsPage extends StatelessWidget {
             case ConnectionState.active:
               // TODO: Handle this case.
               print(snapshot.data.documents.length);
-              if (snapshot.hasData) {
+              if (snapshot.data.documents.length > 0) {
                 // TODO: Handle this case.
                 return ListView.builder(
                   itemCount: snapshot.data.documents.length,
@@ -36,23 +37,24 @@ class StoreBookingsPage extends StatelessWidget {
                       child: ListTile(
                           subtitle:
                               Text(snapshot.data.documents[index].data['date']),
-                          title:
-                              Text(' Bookings Opended : ${snapshot.data.documents[index].data['isBookingOpened']}')),
+                          title: Text(
+                              ' Bookings Opended : ${snapshot.data.documents[index].data['isBookingOpened']}')),
                     );
                   },
                 );
               }
-
               return Center(
-                child: Text("No Customers available"),
+                child: Text("No Bookings available"),
               );
 
               break;
             case ConnectionState.done:
-              // TODO: Handle this case.
-
+            // TODO: Handle this case.
               break;
           }
+          return Center(
+            child: Text("No Bookings available"),
+          );
         });
   }
 }

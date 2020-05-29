@@ -315,6 +315,14 @@ class BookingsAvailableWidget extends StatelessWidget {
                   color: Colors.white),
             ),
           ),
+          SizedBox(
+            height: 5,
+          ),
+          Text(
+            'Note : ${gotDocs.documents[0]["message"]}',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
         ],
       ),
     );
