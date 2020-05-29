@@ -14,7 +14,8 @@ class CustomerVisitsPage extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance
             .document(currentUser.user.userDocumentPath)
-            .collection('visits').orderBy('date', descending: true)
+            .collection('visits')
+            .orderBy('date', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
@@ -30,13 +31,16 @@ class CustomerVisitsPage extends StatelessWidget {
             case ConnectionState.active:
               // TODO: Handle this case.
               print(snapshot.data.documents.length);
-              if (snapshot.hasData) {
+              if (snapshot.data.documents.length > 0) {
+
                 return ListView.builder(
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (context, index) {
-                    
                     return Card(
-                      color: snapshot.data.documents[index]["status"] == 'Completed' ? Colors.red : Colors.green,
+                        color: snapshot.data.documents[index]["status"] ==
+                                'Completed'
+                            ? Colors.red
+                            : Colors.green,
                         elevation: 4,
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -45,8 +49,10 @@ class CustomerVisitsPage extends StatelessWidget {
                             children: <Widget>[
                               Text(
                                 snapshot.data.documents[index]["store"]["name"],
-                                style: TextStyle(color: Colors.white,
-                                    fontSize: 24, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold),
                               ),
                               SizedBox(
                                 height: 5,
@@ -55,7 +61,8 @@ class CustomerVisitsPage extends StatelessWidget {
                                 snapshot.data.documents[index]["store"]
                                     ['address'],
                                 style: TextStyle(
-                                    fontSize: 14,color: Colors.white,
+                                    fontSize: 14,
+                                    color: Colors.white,
                                     fontWeight: FontWeight.normal),
                               ),
                               SizedBox(
@@ -64,18 +71,19 @@ class CustomerVisitsPage extends StatelessWidget {
                               Text(
                                 'Token No : ${snapshot.data.documents[index]["tokenNo"]}',
                                 style: TextStyle(
-                                  fontSize: 14,color: Colors.white,
+                                  fontSize: 14,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              
-                               SizedBox(
+                              SizedBox(
                                 height: 5,
                               ),
                               Text(
                                 'Visit Status : ${snapshot.data.documents[index]["status"]}',
                                 style: TextStyle(
-                                  fontSize: 14,color: Colors.white,
+                                  fontSize: 14,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -86,7 +94,7 @@ class CustomerVisitsPage extends StatelessWidget {
                 );
               }
               return Center(
-                child: Text("No Visits available"),
+                child: Text("You have no visits yet"),
               );
 
               break;
@@ -95,6 +103,9 @@ class CustomerVisitsPage extends StatelessWidget {
 
               break;
           }
+          return Center(
+            child: Text("You have no visits yet"),
+          );
         });
   }
 }

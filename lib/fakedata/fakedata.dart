@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:faker/faker.dart';
+import 'package:stateDemo/classes/timeHelpers.dart';
 
 class FakeData {
   Faker faker = Faker();
@@ -50,7 +51,7 @@ class FakeData {
     final map = {
       'date' : booking['date'],
       'time': DateTime.now().toString(),
-      'tokenNo': booking['patients']+1,
+      'tokenNo': booking['customers']+1,
       'waitingTime': booking['waitingTime'],
       'status': 'OnGoing',
       'address': faker.address.streetAddress(),
@@ -62,13 +63,14 @@ class FakeData {
     return map;
   }
 
-  Map<String, dynamic> genBooking() {
+  Map<String, dynamic> genBooking(Map<String, dynamic> formData, String storeUid) {
     final map = {
-      'date' : FieldValue.serverTimestamp(),
-      'patients': 5,
-      'waitingTime': 20,
+      'date' : TimeHelpers().todaysDate(),
+      'customers': formData['inLineCustomers'],
+      'waitingTime': formData['avgTime'],
       'isBookingOpened': true,
-      'storeUid': 'fGRXsdxvajS4EDeeQ5MuMZb8zIo2',
+      'storeUid': storeUid,
+      'maxCustomers': formData['maxCustomers'],
       'message': 'Accepting customers'
     };
     return map;

@@ -21,7 +21,7 @@ class _CustomerOnGoingVisitPageState extends State<CustomerOnGoingVisitPage> {
   String label = "Seconds";
   int _counter = -1;
   Timer _timer;
-
+DateTime myApprox;
   @override
   void initState() {
     super.initState();
@@ -40,32 +40,35 @@ class _CustomerOnGoingVisitPageState extends State<CustomerOnGoingVisitPage> {
       String bookedTime = widget.visitedDoc.data['time'];
       int queue = widget.visitedDoc.data['tokenNo'] - 1;
       int waitingTime = widget.visitedDoc.data['waitingTime'] * queue;
-      DateTime myApprox =
+      myApprox =
           DateTime.parse(bookedTime).add(Duration(minutes: waitingTime));
-          print(waitingTime);
       if (waitingTime > 0) {
         setState(() {
-          final left = DateTime.parse('2020-05-28 00:24:19.110587').difference(DateTime.now());
-          if(left.inSeconds <=  60){
+          final left = myApprox
+              .difference(DateTime.now());
+
+          if (left.inSeconds >= 0 && left.inSeconds < 60) {
+            print(left.inSeconds);
             label = "Seconds";
-          _counter = left.inSeconds;
+            _counter = left.inSeconds;
           }
-           if(left.inMinutes < 60){
+
+          if (left.inMinutes > 0 && left.inMinutes < 60) {
             label = "Minutes";
-          _counter = left.inMinutes;
+            _counter = left.inMinutes;
           }
 
-          if(left.inMinutes > 60){
+          if (left.inMinutes > 60) {
             label = "Hours";
-          _counter = left.inHours;
-          } 
+            _counter = left.inHours;
+          }
 
-          if (left.inMinutes == 0) {
+          if (left.inSeconds == 0) {
             _timer.cancel();
             print('Canceled');
           }
         });
-      }else {
+      } else {
         setState(() {
           _counter = 0;
           if (_counter == 0) {
@@ -94,21 +97,70 @@ class _CustomerOnGoingVisitPageState extends State<CustomerOnGoingVisitPage> {
           Text(
             'Booking Confirmed',
           ),
+          SizedBox(
+            height: 10,
+          ),
           if (_counter < 0)
             Text(
               'Calculating',
-              style: Theme.of(context).textTheme.headline4,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
+          SizedBox(
+            height: 10,
+          ),
           if (_counter > 0)
             Text(
               '${_counter} ${label} Left',
-              style: Theme.of(context).textTheme.headline4,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
+
           if (_counter == 0)
             Text(
               'Its Your Time',
-              style: Theme.of(context).textTheme.headline4,
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 20,),
+
+          Text(
+            widget.visitedDoc.data['store']['name'],
+            style: TextStyle(
+                color: Colors.indigo,
+                ),
+          ),
+            SizedBox(height: 10,),
+            Text(
+            widget.visitedDoc.data['store']['address'],
+            style: TextStyle(
+                color: Colors.indigo,
+                ),
+          ),
+            SizedBox(height: 10,),
+            Text(
+           'Your Token No : ${ widget.visitedDoc.data['tokenNo']}',
+            style: TextStyle(
+                color: Colors.indigo,
+                ),
+          ),
+          RaisedButton(
+            onPressed: () async{
+            await Firestore.instance.document(widget.visitedDoc.data['customerListPath']).delete();
+            DocumentSnapshot bookingDoc = await Firestore.instance.document(widget.visitedDoc.data['bookingDocPath']).get();
+            int present = bookingDoc.data['customers'];
+            present -= 1;
+            await Firestore.instance
+                .document(bookingDoc.reference.path)
+                .setData({'customers': present}, merge: true);
+            await Firestore.instance
+                .document(widget.visitedDoc.reference.path).delete();
+             
+            },
+
+            child: Text(
+              'Cancel Visit',
+              style: TextStyle(color: Colors.white),
+            ),
+            color: Colors.red,
+          )
         ],
       ),
     );

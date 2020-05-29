@@ -5,5 +5,8 @@ class TimeHelpers {
     return DateTime.parse(time.toDate().toString()).toIso8601String();
   }
 
+  String todaysDate() {
+      return '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}';
+    }
   
 }

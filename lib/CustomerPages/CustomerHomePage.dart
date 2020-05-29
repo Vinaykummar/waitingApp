@@ -274,7 +274,7 @@ class BookingsAvailableWidget extends StatelessWidget {
             height: 5,
           ),
           Text(
-            'Waiting Time - ${gotDocs.documents[0]["waitingTime"] * gotDocs.documents[0]["patients"]} Minutes',
+            'Waiting Time - ${gotDocs.documents[0]["waitingTime"] * gotDocs.documents[0]["customers"]} Minutes',
             style: TextStyle(
                 fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
@@ -282,7 +282,7 @@ class BookingsAvailableWidget extends StatelessWidget {
             height: 5,
           ),
           Text(
-            'People In Line - ${gotDocs.documents[0]["patients"]} Members',
+            'People In Line - ${gotDocs.documents[0]["customers"]} Members',
             style: TextStyle(
                 fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
