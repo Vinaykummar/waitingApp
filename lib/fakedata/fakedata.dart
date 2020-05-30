@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:faker/faker.dart';
-import 'package:stateDemo/classes/timeHelpers.dart';
+import 'package:stateDemo/Helpers/timeHelpers.dart';
 
 class FakeData {
   Faker faker = Faker();

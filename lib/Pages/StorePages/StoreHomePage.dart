@@ -1,16 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/StorePages/StoreBookingFormPage.dart';
-import 'package:stateDemo/classes/timeHelpers.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/StorePages/StoreBookingFormPage.dart';
+import 'package:stateDemo/Helpers/timeHelpers.dart';
 
-import 'BookedCustomersPage.dart';
+import 'package:stateDemo/Pages/StorePages/BookedCustomersPage.dart';
 
 class StoreHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     print(TimeHelpers().todaysDate());
 
     int waitingTime;

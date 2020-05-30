@@ -5,16 +5,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/Homepage.dart';
-import 'package:stateDemo/classes/Pages/EntryPage.dart';
-import 'package:stateDemo/classes/User.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/Homepage.dart';
+import 'package:stateDemo/Pages/EntryPage.dart';
+import 'package:stateDemo/Models/User.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     final auth = FirebaseAuth.instance;
     final firestore = Firestore.instance;
     SharedPreferences sharedPreferences;

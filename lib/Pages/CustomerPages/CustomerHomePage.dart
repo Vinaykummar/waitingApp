@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/CustomerPages/CustomerOnGoingVisitPage.dart';
-import 'package:stateDemo/CustomerPages/CustomerVisitForm.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerOnGoingVisitPage.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerVisitForm.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class CustomerHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     FakeData faker = FakeData();
 
     void uploadStore() async {
@@ -244,7 +244,7 @@ class BookingsAvailableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     final fakeData = FakeData();
 
     return Container(

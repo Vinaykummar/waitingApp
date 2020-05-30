@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
 
 class CustomerOnGoingVisitPage extends StatefulWidget {
   CustomerOnGoingVisitPage({Key key, this.title, @required this.visitedDoc})

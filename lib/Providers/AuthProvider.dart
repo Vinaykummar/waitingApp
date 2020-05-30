@@ -5,9 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stateDemo/classes/User.dart';
+import 'package:stateDemo/Models/User.dart';
 
-class AuthProvider extends ChangeNotifier {
+class CurrentUserProvider extends ChangeNotifier {
   SharedPreferences sharedPreferences;
   // DocumentSnapshot visitOnGoingDocument;
   // bool _isVisitOnGoing ;
@@ -20,7 +20,7 @@ class AuthProvider extends ChangeNotifier {
   // int get customerWaitTime => _customerWaitTime;
 
 
-  AuthProvider() {
+  CurrentUserProvider() {
     print('frommm connss');
     _user = User.noUserFound();
     setFromPref();

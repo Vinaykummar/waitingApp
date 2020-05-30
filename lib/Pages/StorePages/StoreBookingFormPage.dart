@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class StoreBookingFormPage extends StatefulWidget {
@@ -13,7 +13,7 @@ class StoreBookingFormPage extends StatefulWidget {
 class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     final _formKey = GlobalKey<FormState>();
     FakeData fakeData = FakeData();
     String _customers;

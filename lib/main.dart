@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/classes/Pages/EntryPage.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/EntryPage.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,8 +14,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
      
-        ChangeNotifierProvider<AuthProvider>(
-            create: (BuildContext context) => AuthProvider()),
+        ChangeNotifierProvider<CurrentUserProvider>(
+            create: (BuildContext context) => CurrentUserProvider()),
       ],
       child: MaterialApp(
           title: 'Flutter Demo',

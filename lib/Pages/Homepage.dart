@@ -2,14 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/CustomerPages/CustomerHomePage.dart';
-import 'package:stateDemo/CustomerPages/CustomerOnGoingVisitPage.dart';
-import 'package:stateDemo/CustomerPages/CustomerVisitsPage.dart';
-import 'package:stateDemo/StorePages/StoreBookingsPage.dart';
-import 'package:stateDemo/StorePages/StoreHomePage.dart';
-import 'package:stateDemo/classes/Pages/EntryPage.dart';
-import 'package:stateDemo/classes/User.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerHomePage.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerOnGoingVisitPage.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerVisitsPage.dart';
+import 'package:stateDemo/Pages/StorePages/StoreBookingsPage.dart';
+import 'package:stateDemo/Pages/StorePages/StoreHomePage.dart';
+import 'package:stateDemo/Pages/EntryPage.dart';
+import 'package:stateDemo/Models/User.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     bool yes = true;
 
     List<BottomNavigationBarItem> storeitems = [

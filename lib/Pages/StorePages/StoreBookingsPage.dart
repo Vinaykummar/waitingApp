@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
 
 class StoreBookingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
 
     return StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance

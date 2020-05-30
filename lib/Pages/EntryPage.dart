@@ -3,11 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stateDemo/AuthProvider.dart';
-import 'package:stateDemo/Homepage.dart';
-import 'package:stateDemo/classes/Pages/LandingPage.dart';
-import 'package:stateDemo/classes/Pages/ProfilePage.dart';
-import 'package:stateDemo/classes/User.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Pages/Homepage.dart';
+import 'package:stateDemo/Pages/LandingPage.dart';
+import 'package:stateDemo/Pages/ProfilePage.dart';
+import 'package:stateDemo/Models/User.dart';
 
 
 class EntryPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class EntryPage extends StatefulWidget {
 
 class _EntryPageState extends State<EntryPage> {
   SharedPreferences sharedPreferences;
-    final currentUser = AuthProvider();
+    final currentUser = CurrentUserProvider();
 
 
   String userFromPref;

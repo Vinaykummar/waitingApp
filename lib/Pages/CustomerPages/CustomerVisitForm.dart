@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stateDemo/AuthProvider.dart';
+import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class CustomerVisitForm extends StatelessWidget {
@@ -13,7 +13,7 @@ class CustomerVisitForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = Provider.of<AuthProvider>(context);
+    final currentUser = Provider.of<CurrentUserProvider>(context);
     TextEditingController gusts = TextEditingController();
 
     createVisit() async {
