@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stateDemo/Models/VisitModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
@@ -11,12 +12,20 @@ class CustomerVisitsPage extends StatelessWidget {
     final currentUser = Provider.of<CurrentUserProvider>(context);
     FakeData faker = FakeData();
 
-    return StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance
-            .document(currentUser.user.userDocumentPath)
-            .collection('visits')
-            .orderBy('date', descending: true)
-            .snapshots(),
+    Stream<List<VisitModel>> getVisits(String path) {
+      return Firestore.instance
+          .document(path)
+          .collection('visits')
+          .orderBy('date', descending: true)
+          .snapshots()
+          .map((QuerySnapshot visitDocs) => visitDocs.documents
+              .map((DocumentSnapshot visitDoc) =>
+                  VisitModel.fromMap(visitDoc.data, visitDoc))
+              .toList());
+    }
+
+    return StreamBuilder<List<VisitModel>>(
+        stream: getVisits(currentUser.user.userDocumentPath),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -30,15 +39,14 @@ class CustomerVisitsPage extends StatelessWidget {
               break;
             case ConnectionState.active:
               // TODO: Handle this case.
-              print(snapshot.data.documents.length);
-              if (snapshot.data.documents.length > 0) {
-
+              print(snapshot.data.length);
+              if (snapshot.data.length > 0) {
                 return ListView.builder(
-                  itemCount: snapshot.data.documents.length,
+                  itemCount: snapshot.data.length,
                   itemBuilder: (context, index) {
+                    VisitModel visitModel = snapshot.data[index];
                     return Card(
-                        color: snapshot.data.documents[index]["status"] ==
-                                'Completed'
+                        color: visitModel.status == 'Completed'
                             ? Colors.red
                             : Colors.green,
                         elevation: 4,
@@ -48,7 +56,7 @@ class CustomerVisitsPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                snapshot.data.documents[index]["store"]["name"],
+                                visitModel.store["name"],
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
@@ -58,8 +66,7 @@ class CustomerVisitsPage extends StatelessWidget {
                                 height: 5,
                               ),
                               Text(
-                                snapshot.data.documents[index]["store"]
-                                    ['address'],
+                                visitModel.store['address'],
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.white,
@@ -69,7 +76,7 @@ class CustomerVisitsPage extends StatelessWidget {
                                 height: 5,
                               ),
                               Text(
-                                'Token No : ${snapshot.data.documents[index]["tokenNo"]}',
+                                'Token No : ${visitModel.tokenNo}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -80,7 +87,7 @@ class CustomerVisitsPage extends StatelessWidget {
                                 height: 5,
                               ),
                               Text(
-                                'Visit Status : ${snapshot.data.documents[index]["status"]}',
+                                'Visit Status : ${visitModel.status}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.white,

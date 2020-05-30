@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stateDemo/Models/BookingModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 
 class StoreBookingsPage extends StatelessWidget {
@@ -8,12 +9,16 @@ class StoreBookingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
 
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<BookingModel>>(
         stream: Firestore.instance
             .document(currentUser.user.userDocumentPath)
             .collection('bookings')
             .where('storeUid', isEqualTo: currentUser.user.uid)
-            .snapshots(),
+            .snapshots()
+            .map((QuerySnapshot bookingDocs) => bookingDocs.documents
+                .map((DocumentSnapshot bookingDoc) =>
+                    BookingModel.fromMap(bookingDoc.data, bookingDoc))
+                .toList()),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -27,18 +32,18 @@ class StoreBookingsPage extends StatelessWidget {
               break;
             case ConnectionState.active:
               // TODO: Handle this case.
-              print(snapshot.data.documents.length);
-              if (snapshot.data.documents.length > 0) {
+              List<BookingModel> bookings = snapshot.data;
+              print(bookings.length);
+              if (bookings.length > 0) {
                 // TODO: Handle this case.
                 return ListView.builder(
-                  itemCount: snapshot.data.documents.length,
+                  itemCount: bookings.length,
                   itemBuilder: (context, index) {
                     return Card(
                       child: ListTile(
-                          subtitle:
-                              Text(snapshot.data.documents[index].data['date']),
+                          subtitle: Text(bookings[index].date),
                           title: Text(
-                              ' Bookings Opended : ${snapshot.data.documents[index].data['isBookingOpened']}')),
+                              ' Bookings Opended : ${bookings[index].isBookingOpened}')),
                     );
                   },
                 );
@@ -49,7 +54,7 @@ class StoreBookingsPage extends StatelessWidget {
 
               break;
             case ConnectionState.done:
-            // TODO: Handle this case.
+              // TODO: Handle this case.
               break;
           }
           return Center(

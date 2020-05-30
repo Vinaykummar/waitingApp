@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stateDemo/Models/BookingModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/Pages/StorePages/StoreBookingFormPage.dart';
 import 'package:stateDemo/Helpers/timeHelpers.dart';
@@ -16,14 +17,17 @@ class StoreHomePage extends StatelessWidget {
     int waitingTime;
     String label;
 
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<List<BookingModel>>(
         stream: Firestore.instance
             .document(currentUser.user.userDocumentPath)
             .collection('bookings')
             .where('storeUid', isEqualTo: currentUser.user.uid)
             .where('date', isEqualTo: TimeHelpers().todaysDate())
             .where('isBookingOpened', isEqualTo: true)
-            .snapshots(),
+            .snapshots().map((QuerySnapshot bookingDocs) => bookingDocs.documents
+            .map((DocumentSnapshot bookingDoc) =>
+            BookingModel.fromMap(bookingDoc.data, bookingDoc))
+            .toList()),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -37,31 +41,31 @@ class StoreHomePage extends StatelessWidget {
               break;
             case ConnectionState.active:
               // TODO: Handle this case.
-              print(snapshot.data.documents.length);
-              if (snapshot.data.documents.length > 0) {
+              List<BookingModel> bookings = snapshot.data;
+              if (bookings.length > 0) {
                 return SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Column(
                     children: <Widget>[
                       Text(
-                          'Customers In Line : ${snapshot.data.documents[0].data['customers']}'),
+                          'Customers In Line : ${bookings[0].customers}'),
                       SizedBox(
                         height: 5,
                       ),
                       Text(
-                          'Avg Wait Time : ${snapshot.data.documents[0].data['waitingTime']}'),
+                          'Avg Wait Time : ${bookings[0].waitingTime}'),
                       SizedBox(
                         height: 5,
                       ),
                       RaisedButton(
                         onPressed: () async {
-                          print(snapshot.data.documents[0].data['customers']);
+                          print(bookings[0].customers);
                           int present =
-                              snapshot.data.documents[0].data['customers'];
+                              bookings[0].customers;
                           present += 1;
                           await Firestore.instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
+                                  bookings[0].firebaseDocument.reference.path)
                               .setData({'customers': present}, merge: true);
                         },
                         child: Text(
@@ -75,19 +79,19 @@ class StoreHomePage extends StatelessWidget {
                       ),
                       RaisedButton(
                         onPressed: () async {
-                          print(snapshot.data.documents[0].data['customers']);
+                          print(bookings[0].customers);
                           int present =
-                              snapshot.data.documents[0].data['customers'];
+                              bookings[0].customers;
                           present -= 1;
                           await Firestore.instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
+                                  bookings[0].firebaseDocument.reference.path)
                               .setData({'customers': present}, merge: true);
 
                           QuerySnapshot bookedCustomers = await Firestore
                               .instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
+                                  bookings[0].firebaseDocument.reference.path)
                               .collection('customers')
                               .getDocuments();
 
@@ -117,11 +121,10 @@ class StoreHomePage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: TextFormField(
-                          initialValue: snapshot
-                              .data.documents[0].data['waitingTime']
+                          initialValue:bookings[0].waitingTime
                               .toString(),
                           decoration: InputDecoration(
-                              labelText: 'Max Number Of Patients'),
+                              labelText: 'Average Wait Time'),
                           onChanged: (value) => waitingTime = int.parse(value),
                           keyboardType: TextInputType.number,
                         ),
@@ -133,7 +136,7 @@ class StoreHomePage extends StatelessWidget {
                         onPressed: () async {
                           await Firestore.instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
+                                  bookings[0].firebaseDocument.reference.path)
                               .setData({'waitingTime': waitingTime},
                                   merge: true);
                         },
@@ -147,7 +150,7 @@ class StoreHomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: TextFormField(
                           initialValue:
-                              snapshot.data.documents[0].data['message'],
+                              bookings[0].message,
                           decoration: InputDecoration(labelText: 'Message'),
                           onChanged: (value) => label = value,
                           keyboardType: TextInputType.text,
@@ -160,7 +163,7 @@ class StoreHomePage extends StatelessWidget {
                         onPressed: () async {
                           await Firestore.instance
                               .document(
-                                  snapshot.data.documents[0].reference.path)
+                                  bookings[0].firebaseDocument.reference.path)
                               .setData({'message': label}, merge: true);
                         },
                         child: Text(
@@ -176,7 +179,7 @@ class StoreHomePage extends StatelessWidget {
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => BookedCustomersPage(
-                              bookedDoc: snapshot.data.documents[0],
+                              bookedDoc: bookings[0].firebaseDocument,
                             ),
                           ));
                         },
@@ -193,7 +196,7 @@ class StoreHomePage extends StatelessWidget {
                         onPressed: () async {
                           await Firestore.instance
                               .document(
-                              snapshot.data.documents[0].reference.path)
+                              bookings[0].firebaseDocument.reference.path)
                               .setData({'isBookingOpened': false}, merge: true);
                         },
                         child: Text(
@@ -232,7 +235,9 @@ class StoreHomePage extends StatelessWidget {
                                   height: 10,
                                 ),
                                 RaisedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => StoreBookingFormPage(),));
+                                  },
                                   child: Text('Start Booking'),
                                   color: Colors.indigo,
                                 ),

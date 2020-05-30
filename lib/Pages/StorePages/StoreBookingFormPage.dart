@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stateDemo/Helpers/timeHelpers.dart';
+import 'package:stateDemo/Models/BookingModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
@@ -20,11 +22,11 @@ class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
     String _avgTime;
     String _maxCustomers;
 
-    createBooking(Map<String, dynamic> formData) async {
+    createBooking(BookingModel bookingModel) async {
       await Firestore.instance
           .document(currentUser.user.userDocumentPath)
           .collection('bookings')
-          .add(fakeData.genBooking( formData, currentUser.user.uid));
+          .add(bookingModel.toJson());
     }
 
     return Scaffold(
@@ -71,13 +73,16 @@ class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
                       _formKey.currentState.validate();
                       _formKey.currentState.save();
 
-                      Map<String, dynamic> formData = {
-                        'inLineCustomers': int.parse(_customers),
-                        'avgTime': int.parse(_avgTime),
-                        'maxCustomers': int.parse(_maxCustomers)
-                      };
+                      BookingModel bookingModel = BookingModel(
+                          date: TimeHelpers().todaysDate(),
+                          customers: int.parse(_customers),
+                          waitingTime: int.parse(_avgTime),
+                          isBookingOpened: true,
+                          storeUid: currentUser.user.uid,
+                          maxCustomers: int.parse(_maxCustomers),
+                          message: 'Bookings Opened ');
 
-                      createBooking(formData);
+                      createBooking(bookingModel);
                       Navigator.of(context).pop();
                     },
                     child: Text(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stateDemo/Models/VisitModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
@@ -16,6 +17,8 @@ class CustomerVisitForm extends StatelessWidget {
     final currentUser = Provider.of<CurrentUserProvider>(context);
     TextEditingController gusts = TextEditingController();
 
+    VisitModel visitModel = VisitModel(storeDoc: storeDoc, bookingDoc: bookingDoc);
+
     createVisit() async {
       print(bookingDoc.data['customers']);
       Map<String, dynamic> visitDetails = fakeData.genVisit(
@@ -25,7 +28,7 @@ class CustomerVisitForm extends StatelessWidget {
       DocumentReference visitedDoc = await Firestore.instance
           .document(currentUser.user.userDocumentPath)
           .collection('visits')
-          .add(visitDetails);
+          .add(visitModel.toJson());
 
       int present = bookingDoc.data['customers'];
       present += 1;
@@ -38,18 +41,19 @@ class CustomerVisitForm extends StatelessWidget {
           .collection('customers')
           .add(currentUser.user.toJson());
 
+
      await Firestore.instance
           .document(bookedCustomerDoc.path)
           .updateData({
        'status': 'OnGoing',
-        'tokenNo': visitDetails['tokenNo'],
+        'tokenNo': visitModel.tokenNo,
         'visitDocPath': visitedDoc.path
       });
 
-      await Firestore.instance.document(visitedDoc.path).updateData({
+      await Firestore.instance.document(visitedDoc.path).setData({
         'bookingDocPath': bookingDoc.reference.path,
         'customerListPath': bookedCustomerDoc.path
-      });
+      },merge: true);
     }
 
     return Scaffold(

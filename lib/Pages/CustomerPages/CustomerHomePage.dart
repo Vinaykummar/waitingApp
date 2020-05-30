@@ -246,6 +246,9 @@ class BookingsAvailableWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
     final fakeData = FakeData();
+    int waitingTime = gotDocs.documents[0]["waitingTime"] * gotDocs.documents[0]["customers"];
+    Duration duration = Duration(minutes: waitingTime);
+
 
     return Container(
       width: double.infinity,
@@ -259,7 +262,7 @@ class BookingsAvailableWidget extends StatelessWidget {
               ? Text(
                   'Bookings Available',
                   style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 )
@@ -273,11 +276,19 @@ class BookingsAvailableWidget extends StatelessWidget {
           SizedBox(
             height: 5,
           ),
+          Divider(color: Colors.white,),
+          if(duration.inMinutes > 60)
           Text(
-            'Waiting Time - ${gotDocs.documents[0]["waitingTime"] * gotDocs.documents[0]["customers"]} Minutes',
+            'Waiting Time - ${duration.inHours} Hours',
             style: TextStyle(
                 fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
+          if(duration.inMinutes <= 60)
+            Text(
+              'Waiting Time - ${duration.inMinutes} Minutes',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
           SizedBox(
             height: 5,
           ),
@@ -297,24 +308,47 @@ class BookingsAvailableWidget extends StatelessWidget {
           SizedBox(
             height: 5,
           ),
-          RaisedButton(
-            color: Colors.orange,
-            onPressed: () async {
-              final bookingDoc = gotDocs.documents[0];
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => CustomerVisitForm(
-                        bookingDoc: bookingDoc,
-                        storeDoc: storeDoc,
-                      )));
-            },
-            child: Text(
-              'Book This Store',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
+          Text(
+            'Max Customers - ${gotDocs.documents[0]["maxCustomers"]} Members',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
+          SizedBox(
+            height: 5,
+          ),
+          if (gotDocs.documents[0]["customers"] !=
+              gotDocs.documents[0]["maxCustomers"])
+            RaisedButton(
+              color: Colors.orange,
+              onPressed: () async {
+                final bookingDoc = gotDocs.documents[0];
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => CustomerVisitForm(
+                          bookingDoc: bookingDoc,
+                          storeDoc: storeDoc,
+                        )));
+              },
+              child: Text(
+                'Book This Store',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            ),
+          if (gotDocs.documents[0]["customers"] ==
+              gotDocs.documents[0]["maxCustomers"])
+            RaisedButton(
+              color: Colors.orange,
+
+              child: Text(
+                'Customers Maxed Out',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            ),
           SizedBox(
             height: 5,
           ),

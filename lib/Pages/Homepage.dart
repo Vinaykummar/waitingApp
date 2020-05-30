@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stateDemo/Pages/CustomerPages/CustomerStoreSearchPage.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/Pages/CustomerPages/CustomerHomePage.dart';
 import 'package:stateDemo/Pages/CustomerPages/CustomerOnGoingVisitPage.dart';
@@ -72,6 +73,13 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(currentUser.user.name),
         actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () async {
+
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => CustomerStoreSearchPage()));
+              }),
           IconButton(
               icon: Icon(Icons.exit_to_app),
               onPressed: () async {
