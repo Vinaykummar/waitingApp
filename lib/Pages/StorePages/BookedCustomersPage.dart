@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:stateDemo/Models/BookedCustomerModel.dart';
+import 'package:stateDemo/Services/StoreServices.dart';
 
 class BookedCustomersPage extends StatelessWidget {
   final DocumentSnapshot bookedDoc;
+  StoreServices storeServices = StoreServices();
 
   BookedCustomersPage({@required this.bookedDoc});
 
@@ -14,17 +16,7 @@ class BookedCustomersPage extends StatelessWidget {
         title: Text("Booked Customers List"),
       ),
       body: StreamBuilder<List<BookedCustomerModel>>(
-        stream: Firestore.instance
-            .document(bookedDoc.reference.path)
-            .collection('customers')
-            .orderBy('tokenNo', descending: false)
-            .snapshots()
-            .map((QuerySnapshot bookedCustomersDocs) => bookedCustomersDocs
-                .documents
-                .map((DocumentSnapshot bookedCustomersDoc) =>
-                    BookedCustomerModel.fromMap(
-                        bookedCustomersDoc.data, bookedCustomersDoc))
-                .toList()),
+        stream: storeServices.getAllBookedCustomers(bookedDoc.reference.path),
         builder: (context, snapshot2) {
           switch (snapshot2.connectionState) {
             case ConnectionState.none:
@@ -70,28 +62,29 @@ class BookedCustomersPage extends StatelessWidget {
                               ),
                             ),
                           ListTile(
-                              trailing: bookedCustomers[index].status ==
-                                      'OnGoing'
-                                  ? IconButton(
-                                      icon: Icon(
-                                        Icons.check,
-                                        color: Colors.indigo,
-                                      ),
-                                      onPressed: () async {
-                                        await Firestore.instance
-                                            .document(bookedCustomers[index]
-                                                .visitDocPath)
-                                            .setData({'status': "Completed"},
-                                                merge: true);
-                                        await Firestore.instance
-                                            .document(bookedCustomers[index]
-                                                .firebaseDocument
-                                                .reference
-                                                .path)
-                                            .setData({'status': "Completed"},
-                                                merge: true);
-                                      })
-                                  : SizedBox.shrink(),
+                              trailing:
+                                  bookedCustomers[index].status == 'OnGoing'
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.check,
+                                            color: Colors.indigo,
+                                          ),
+                                          onPressed: () async {
+                                            await storeServices
+                                                .updateVisitorsStatus(
+                                                    bookedCustomers[index]
+                                                        .visitDocPath,
+                                                    {'status': "Completed"});
+
+                                            await storeServices
+                                                .updateBookedCustomersStatus(
+                                                    bookedCustomers[index]
+                                                        .firebaseDocument
+                                                        .reference
+                                                        .path,
+                                                    {'status': "Completed"});
+                                          })
+                                      : SizedBox.shrink(),
                               subtitle: Text(bookedCustomers[index].email),
                               title: Text(
                                   '${bookedCustomers[index].name} / Token No : ${bookedCustomers[index].tokenNo}')),

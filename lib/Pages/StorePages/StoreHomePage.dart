@@ -7,27 +7,24 @@ import 'package:stateDemo/Pages/StorePages/StoreBookingFormPage.dart';
 import 'package:stateDemo/Helpers/timeHelpers.dart';
 
 import 'package:stateDemo/Pages/StorePages/BookedCustomersPage.dart';
+import 'package:stateDemo/Services/FirebaseAuthService.dart';
+import 'package:stateDemo/Services/StoreServices.dart';
 
 class StoreHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
+    StoreServices storeServices = StoreServices();
     print(TimeHelpers().todaysDate());
 
     int waitingTime;
     String label;
 
     return StreamBuilder<List<BookingModel>>(
-        stream: Firestore.instance
-            .document(currentUser.user.userDocumentPath)
-            .collection('bookings')
-            .where('storeUid', isEqualTo: currentUser.user.uid)
-            .where('date', isEqualTo: TimeHelpers().todaysDate())
-            .where('isBookingOpened', isEqualTo: true)
-            .snapshots().map((QuerySnapshot bookingDocs) => bookingDocs.documents
-            .map((DocumentSnapshot bookingDoc) =>
-            BookingModel.fromMap(bookingDoc.data, bookingDoc))
-            .toList()),
+        stream: storeServices.getTodaysBookingDocument(
+            currentUser.user.userDocumentPath,
+            currentUser.user.uid,
+            TimeHelpers().todaysDate()),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -47,26 +44,22 @@ class StoreHomePage extends StatelessWidget {
                   scrollDirection: Axis.vertical,
                   child: Column(
                     children: <Widget>[
-                      Text(
-                          'Customers In Line : ${bookings[0].customers}'),
+                      Text('Customers In Line : ${bookings[0].customers}'),
                       SizedBox(
                         height: 5,
                       ),
-                      Text(
-                          'Avg Wait Time : ${bookings[0].waitingTime}'),
+                      Text('Avg Wait Time : ${bookings[0].waitingTime}'),
                       SizedBox(
                         height: 5,
                       ),
                       RaisedButton(
                         onPressed: () async {
                           print(bookings[0].customers);
-                          int present =
-                              bookings[0].customers;
+                          int present = bookings[0].customers;
                           present += 1;
-                          await Firestore.instance
-                              .document(
-                                  bookings[0].firebaseDocument.reference.path)
-                              .setData({'customers': present}, merge: true);
+                          await storeServices.increaseCustomerCount(
+                              bookings[0].firebaseDocument.reference.path,
+                              {'customers': present});
                         },
                         child: Text(
                           'Increase Customer by +1',
@@ -80,33 +73,27 @@ class StoreHomePage extends StatelessWidget {
                       RaisedButton(
                         onPressed: () async {
                           print(bookings[0].customers);
-                          int present =
-                              bookings[0].customers;
+                          int present = bookings[0].customers;
                           present -= 1;
-                          await Firestore.instance
-                              .document(
-                                  bookings[0].firebaseDocument.reference.path)
-                              .setData({'customers': present}, merge: true);
+                          await storeServices.decreaseCustomerCount(
+                              bookings[0].firebaseDocument.reference.path,
+                              {'customers': present});
 
-                          QuerySnapshot bookedCustomers = await Firestore
-                              .instance
-                              .document(
-                                  bookings[0].firebaseDocument.reference.path)
-                              .collection('customers')
-                              .getDocuments();
+                          QuerySnapshot bookedCustomers =
+                              await storeServices.getBookedCustomers(
+                                  bookings[0].firebaseDocument.reference.path);
 
                           bookedCustomers.documents
                               .forEach((DocumentSnapshot document) async {
                             int presentTokenNo = document.data['tokenNo'];
                             presentTokenNo -= 1;
-                            await Firestore.instance
-                                .document(document.data['visitDocPath'])
-                                .setData({'tokenNo': presentTokenNo},
-                                    merge: true);
-                            await Firestore.instance
-                                .document(document.reference.path)
-                                .setData({'tokenNo': presentTokenNo},
-                                    merge: true);
+                            await storeServices.updateVisitorsTokenNo(
+                                document.data['visitDocPath'],
+                                {'tokenNo': presentTokenNo});
+
+                            await storeServices.updateBookedCustomersTokenNo(
+                                document.reference.path,
+                                {'tokenNo': presentTokenNo});
                           });
                         },
                         child: Text(
@@ -121,10 +108,9 @@ class StoreHomePage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: TextFormField(
-                          initialValue:bookings[0].waitingTime
-                              .toString(),
-                          decoration: InputDecoration(
-                              labelText: 'Average Wait Time'),
+                          initialValue: bookings[0].waitingTime.toString(),
+                          decoration:
+                              InputDecoration(labelText: 'Average Wait Time'),
                           onChanged: (value) => waitingTime = int.parse(value),
                           keyboardType: TextInputType.number,
                         ),
@@ -134,11 +120,9 @@ class StoreHomePage extends StatelessWidget {
                       ),
                       RaisedButton(
                         onPressed: () async {
-                          await Firestore.instance
-                              .document(
-                                  bookings[0].firebaseDocument.reference.path)
-                              .setData({'waitingTime': waitingTime},
-                                  merge: true);
+                          await storeServices.updateBookingWaitingTime(
+                              bookings[0].firebaseDocument.reference.path,
+                              {'waitingTime': waitingTime});
                         },
                         child: Text(
                           'Update Waiting Time',
@@ -149,8 +133,7 @@ class StoreHomePage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: TextFormField(
-                          initialValue:
-                              bookings[0].message,
+                          initialValue: bookings[0].message,
                           decoration: InputDecoration(labelText: 'Message'),
                           onChanged: (value) => label = value,
                           keyboardType: TextInputType.text,
@@ -161,10 +144,9 @@ class StoreHomePage extends StatelessWidget {
                       ),
                       RaisedButton(
                         onPressed: () async {
-                          await Firestore.instance
-                              .document(
-                                  bookings[0].firebaseDocument.reference.path)
-                              .setData({'message': label}, merge: true);
+                          await storeServices.updateBookingMessage(
+                              bookings[0].firebaseDocument.reference.path,
+                              {'message': label});
                         },
                         child: Text(
                           'Update Message',
@@ -194,10 +176,9 @@ class StoreHomePage extends StatelessWidget {
                       ),
                       RaisedButton(
                         onPressed: () async {
-                          await Firestore.instance
-                              .document(
-                              bookings[0].firebaseDocument.reference.path)
-                              .setData({'isBookingOpened': false}, merge: true);
+                          await storeServices.closeBooking(
+                              bookings[0].firebaseDocument.reference.path,
+                              {'isBookingOpened': false});
                         },
                         child: Text(
                           'Close booking',
@@ -210,21 +191,21 @@ class StoreHomePage extends StatelessWidget {
                 );
               }
               return StreamBuilder<DocumentSnapshot>(
-                  stream: Firestore.instance.document(
-                      currentUser.user.userDocumentPath).snapshots(),
+                  stream: storeServices
+                      .getMystore(currentUser.user.userDocumentPath),
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
                       case ConnectionState.none:
-                      // TODO: Handle this case.
+                        // TODO: Handle this case.
                         break;
                       case ConnectionState.waiting:
-                      // TODO: Handle this case.
+                        // TODO: Handle this case.
                         return Center(
                           child: CircularProgressIndicator(),
                         );
                         break;
                       case ConnectionState.active:
-                      // TODO: Handle this case.
+                        // TODO: Handle this case.
                         if (snapshot.data['isStoreOpened'] == true) {
                           return Center(
                             child: Column(
@@ -236,7 +217,11 @@ class StoreHomePage extends StatelessWidget {
                                 ),
                                 RaisedButton(
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => StoreBookingFormPage(),));
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          StoreBookingFormPage(),
+                                    ));
                                   },
                                   child: Text('Start Booking'),
                                   color: Colors.indigo,
@@ -246,10 +231,9 @@ class StoreHomePage extends StatelessWidget {
                                 ),
                                 RaisedButton(
                                   onPressed: () async {
-                                    await Firestore.instance.document(
-                                        snapshot.data.reference.path).setData({
-                                      'isStoreOpened': false
-                                    }, merge: true);
+                                    await storeServices.closeStore(
+                                        snapshot.data.reference.path,
+                                        {'isStoreOpened': false});
                                   },
                                   child: Text('Close Store'),
                                   color: Colors.red,
@@ -260,17 +244,16 @@ class StoreHomePage extends StatelessWidget {
                         }
                         return RaisedButton(
                           onPressed: () async {
-                            await Firestore.instance.document(
-                                snapshot.data.reference.path).setData({
-                              'isStoreOpened': true
-                            }, merge: true);
+                            await storeServices.openStore(
+                                snapshot.data.reference.path,
+                                {'isStoreOpened': true});
                           },
                           child: Text('Open Store'),
                           color: Colors.green,
                         );
                         break;
                       case ConnectionState.done:
-                      // TODO: Handle this case.
+                        // TODO: Handle this case.
                         break;
                     }
                     return Center(
@@ -278,12 +261,10 @@ class StoreHomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Text("No Bookings available Today"),
-
                         ],
                       ),
                     );
-                  }
-              );
+                  });
 
               break;
             case ConnectionState.done:
@@ -296,7 +277,6 @@ class StoreHomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text("No Bookings available Today"),
-
               ],
             ),
           );

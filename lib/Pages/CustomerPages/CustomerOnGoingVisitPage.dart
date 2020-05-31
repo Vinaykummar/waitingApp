@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Services/CustomerServices.dart';
 
 class CustomerOnGoingVisitPage extends StatefulWidget {
   CustomerOnGoingVisitPage({Key key, this.title, @required this.visitedDoc})
@@ -11,6 +12,8 @@ class CustomerOnGoingVisitPage extends StatefulWidget {
 
   final String title;
   final DocumentSnapshot visitedDoc;
+  CustomerServices customerServices = CustomerServices();
+
 
   @override
   _CustomerOnGoingVisitPageState createState() =>
@@ -21,7 +24,8 @@ class _CustomerOnGoingVisitPageState extends State<CustomerOnGoingVisitPage> {
   String label = "Seconds";
   int _counter = -1;
   Timer _timer;
-DateTime myApprox;
+  DateTime myApprox;
+
   @override
   void initState() {
     super.initState();
@@ -29,23 +33,15 @@ DateTime myApprox;
   }
 
   void _incrementCounter() {
-    //     final myfrontCustomer = widget.visitedDoc.data['tokenNo'] - 1;
-//     final myWaitingTime =
-//         myfrontCustomer * widget.visitedDoc.data['waitingTime'];
-//     final timeOfBooking = DateTime.parse(widget.visitedDoc.data['time']);
 
-//     DateTime myApproxTime = timeOfBooking.add(Duration(minutes: myWaitingTime));
-//     Duration timeLeft = myApproxTime.difference(DateTime.now());
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       String bookedTime = widget.visitedDoc.data['time'];
       int queue = widget.visitedDoc.data['tokenNo'] - 1;
       int waitingTime = widget.visitedDoc.data['waitingTime'] * queue;
-      myApprox =
-          DateTime.parse(bookedTime).add(Duration(minutes: waitingTime));
+      myApprox = DateTime.parse(bookedTime).add(Duration(minutes: waitingTime));
       if (waitingTime > 0) {
         setState(() {
-          final left = myApprox
-              .difference(DateTime.now());
+          final left = myApprox.difference(DateTime.now());
 
           if (left.inSeconds >= 0 && left.inSeconds < 60) {
             print(left.inSeconds);
@@ -113,48 +109,48 @@ DateTime myApprox;
               '${_counter} ${label} Left',
               style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
-
           if (_counter == 0)
             Text(
               'Its Your Time',
               style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20,),
-
+          SizedBox(
+            height: 20,
+          ),
           Text(
             widget.visitedDoc.data['store']['name'],
             style: TextStyle(
-                color: Colors.indigo,
-                ),
+              color: Colors.indigo,
+            ),
           ),
-            SizedBox(height: 10,),
-            Text(
+          SizedBox(
+            height: 10,
+          ),
+          Text(
             widget.visitedDoc.data['store']['address'],
             style: TextStyle(
-                color: Colors.indigo,
-                ),
+              color: Colors.indigo,
+            ),
           ),
-            SizedBox(height: 10,),
-            Text(
-           'Your Token No : ${ widget.visitedDoc.data['tokenNo']}',
+          SizedBox(
+            height: 10,
+          ),
+          Text(
+            'Your Token No : ${widget.visitedDoc.data['tokenNo']}',
             style: TextStyle(
-                color: Colors.indigo,
-                ),
+              color: Colors.indigo,
+            ),
           ),
           RaisedButton(
-            onPressed: () async{
-            await Firestore.instance.document(widget.visitedDoc.data['customerListPath']).delete();
-            DocumentSnapshot bookingDoc = await Firestore.instance.document(widget.visitedDoc.data['bookingDocPath']).get();
-            int present = bookingDoc.data['customers'];
-            present -= 1;
-            await Firestore.instance
-                .document(bookingDoc.reference.path)
-                .setData({'customers': present}, merge: true);
-            await Firestore.instance
-                .document(widget.visitedDoc.reference.path).delete();
-             
-            },
+            onPressed: () async {
+              await widget.customerServices.deleteInBookedCustomersList(widget.visitedDoc.data['customerListPath']);
+              DocumentSnapshot bookingDoc = await widget.customerServices.getCurrentBookedDoc(widget.visitedDoc.data['bookingDocPath']);
+              int present = bookingDoc.data['customers'];
+              present -= 1;
 
+              await widget.customerServices.decreaseCustomerCount(bookingDoc.reference.path, {'customers': present});
+              await widget.customerServices.deleteVisit(widget.visitedDoc.reference.path);
+            },
             child: Text(
               'Cancel Visit',
               style: TextStyle(color: Colors.white),

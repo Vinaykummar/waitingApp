@@ -5,28 +5,20 @@ import 'package:provider/provider.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/Pages/CustomerPages/CustomerOnGoingVisitPage.dart';
 import 'package:stateDemo/Pages/CustomerPages/CustomerVisitForm.dart';
+import 'package:stateDemo/Services/CustomerServices.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class CustomerHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
-    FakeData faker = FakeData();
-
-    void uploadStore() async {
-      await Firestore.instance.collection('customers').add(faker.genStore());
-    }
-
+    CustomerServices customerServices = CustomerServices();
     String date() {
       return '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}';
     }
 
     return StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance
-          .document(currentUser.user.userDocumentPath)
-          .collection('visits')
-          .where('status', isEqualTo: 'OnGoing')
-          .snapshots(),
+      stream: customerServices.getCustomerVisitDocument(currentUser.user.userDocumentPath),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
@@ -59,17 +51,12 @@ class CustomerHomePage extends StatelessWidget {
 }
 
 class StoresBuilder extends StatelessWidget {
-  const StoresBuilder({
-    Key key,
-  }) : super(key: key);
+  CustomerServices customerServices = CustomerServices();
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance
-            .collection('customers')
-            .where('role', isEqualTo: 'store')
-            .snapshots(),
+        stream: customerServices.getNearbyStores(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -117,11 +104,13 @@ class StoresBuilder extends StatelessWidget {
 }
 
 class StoreWidget extends StatelessWidget {
-  const StoreWidget({Key key, @required this.gotStores, @required this.index})
+   StoreWidget({Key key, @required this.gotStores, @required this.index})
       : super(key: key);
 
   final QuerySnapshot gotStores;
   final int index;
+  CustomerServices customerServices = CustomerServices();
+
 
   @override
   Widget build(BuildContext context) {
@@ -167,11 +156,7 @@ class StoreWidget extends StatelessWidget {
               ),
               if (gotStores.documents[index].data['isStoreOpened'] == true)
                 StreamBuilder(
-                  stream: Firestore.instance
-                      .document(gotStores.documents[index].reference.path)
-                      .collection('bookings')
-                      .limit(1)
-                      .snapshots(),
+                  stream: customerServices.getStoreBookings(gotStores.documents[index].reference.path),
                   builder: (context, snapshot2) {
                     QuerySnapshot gotDocs = snapshot2.data;
                     if (snapshot2.hasData) {

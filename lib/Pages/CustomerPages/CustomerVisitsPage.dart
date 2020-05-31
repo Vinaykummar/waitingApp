@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stateDemo/Models/VisitModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Services/CustomerServices.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class CustomerVisitsPage extends StatelessWidget {
@@ -11,21 +12,10 @@ class CustomerVisitsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
     FakeData faker = FakeData();
-
-    Stream<List<VisitModel>> getVisits(String path) {
-      return Firestore.instance
-          .document(path)
-          .collection('visits')
-          .orderBy('date', descending: true)
-          .snapshots()
-          .map((QuerySnapshot visitDocs) => visitDocs.documents
-              .map((DocumentSnapshot visitDoc) =>
-                  VisitModel.fromMap(visitDoc.data, visitDoc))
-              .toList());
-    }
+    CustomerServices customerServices = CustomerServices();
 
     return StreamBuilder<List<VisitModel>>(
-        stream: getVisits(currentUser.user.userDocumentPath),
+        stream: customerServices.getMyVisits(currentUser.user.userDocumentPath),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:

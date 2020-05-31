@@ -3,22 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stateDemo/Models/BookingModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Services/StoreServices.dart';
 
 class StoreBookingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
+    StoreServices storeServices = StoreServices();
+
 
     return StreamBuilder<List<BookingModel>>(
-        stream: Firestore.instance
-            .document(currentUser.user.userDocumentPath)
-            .collection('bookings')
-            .where('storeUid', isEqualTo: currentUser.user.uid)
-            .snapshots()
-            .map((QuerySnapshot bookingDocs) => bookingDocs.documents
-                .map((DocumentSnapshot bookingDoc) =>
-                    BookingModel.fromMap(bookingDoc.data, bookingDoc))
-                .toList()),
+        stream: storeServices.getAllBookings(currentUser.user.userDocumentPath, currentUser.user.uid),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:

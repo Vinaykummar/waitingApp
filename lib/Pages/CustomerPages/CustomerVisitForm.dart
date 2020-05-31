@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stateDemo/Models/VisitModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Services/CustomerServices.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class CustomerVisitForm extends StatelessWidget {
   final DocumentSnapshot storeDoc;
   final DocumentSnapshot bookingDoc;
   FakeData fakeData = FakeData();
+  CustomerServices customerServices = CustomerServices();
 
   CustomerVisitForm({@required this.storeDoc, @required this.bookingDoc});
 
@@ -17,43 +19,34 @@ class CustomerVisitForm extends StatelessWidget {
     final currentUser = Provider.of<CurrentUserProvider>(context);
     TextEditingController gusts = TextEditingController();
 
-    VisitModel visitModel = VisitModel(storeDoc: storeDoc, bookingDoc: bookingDoc);
+    VisitModel visitModel =
+        VisitModel(storeDoc: storeDoc, bookingDoc: bookingDoc);
 
     createVisit() async {
-      print(bookingDoc.data['customers']);
-      Map<String, dynamic> visitDetails = fakeData.genVisit(
-          currentUser.user.uid, storeDoc, bookingDoc.data, gusts.text);
 
 
-      DocumentReference visitedDoc = await Firestore.instance
-          .document(currentUser.user.userDocumentPath)
-          .collection('visits')
-          .add(visitModel.toJson());
+      DocumentReference visitedDoc = await customerServices.createVisit(
+          currentUser.user.userDocumentPath, visitModel);
 
       int present = bookingDoc.data['customers'];
       present += 1;
-      await Firestore.instance
-          .document(bookingDoc.reference.path)
-          .setData({'customers': present}, merge: true);
+      await customerServices.increaseCustomerCount(
+          bookingDoc.reference.path, {'customers': present});
 
-      DocumentReference bookedCustomerDoc = await Firestore.instance
-          .document(bookingDoc.reference.path)
-          .collection('customers')
-          .add(currentUser.user.toJson());
+      DocumentReference bookedCustomerDoc =
+          await customerServices.addToBookedCustomersList(
+              bookingDoc.reference.path, currentUser.user.toJson());
 
-
-     await Firestore.instance
-          .document(bookedCustomerDoc.path)
-          .updateData({
-       'status': 'OnGoing',
+      await customerServices.updateBookedCustomer(bookedCustomerDoc.path, {
+        'status': 'OnGoing',
         'tokenNo': visitModel.tokenNo,
         'visitDocPath': visitedDoc.path
       });
 
-      await Firestore.instance.document(visitedDoc.path).setData({
+      await customerServices.updateVisitedDoc(visitedDoc.path, {
         'bookingDocPath': bookingDoc.reference.path,
         'customerListPath': bookedCustomerDoc.path
-      },merge: true);
+      });
     }
 
     return Scaffold(

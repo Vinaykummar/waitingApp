@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:stateDemo/Services/CustomerServices.dart';
 
 
 class CustomerStoreSearchPage extends StatelessWidget {
   String storeName;
+  CustomerServices customerServices = CustomerServices();
+
 
   Stream<QuerySnapshot> findStores(String query){
-    return Firestore.instance.collection('customers').where('role', isEqualTo: 'store').where('keywords',arrayContains:query).snapshots();
+    return customerServices.findStores(query);
   }
 
   @override

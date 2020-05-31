@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:stateDemo/Helpers/timeHelpers.dart';
 import 'package:stateDemo/Models/BookingModel.dart';
 import 'package:stateDemo/Providers/AuthProvider.dart';
+import 'package:stateDemo/Services/StoreServices.dart';
 import 'package:stateDemo/fakedata/fakedata.dart';
 
 class StoreBookingFormPage extends StatefulWidget {
@@ -13,6 +14,8 @@ class StoreBookingFormPage extends StatefulWidget {
 }
 
 class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
+  StoreServices storeServices = StoreServices();
+
   @override
   Widget build(BuildContext context) {
     final currentUser = Provider.of<CurrentUserProvider>(context);
@@ -23,10 +26,8 @@ class _StoreBookingFormPageState extends State<StoreBookingFormPage> {
     String _maxCustomers;
 
     createBooking(BookingModel bookingModel) async {
-      await Firestore.instance
-          .document(currentUser.user.userDocumentPath)
-          .collection('bookings')
-          .add(bookingModel.toJson());
+      await storeServices.addbooking(
+          currentUser.user.userDocumentPath, bookingModel);
     }
 
     return Scaffold(
