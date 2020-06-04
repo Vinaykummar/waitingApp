@@ -13,9 +13,12 @@ class BookedCustomersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Booked Customers List"),
+        iconTheme: IconThemeData(color: Colors.black),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text("Booked Customers List", style: TextStyle(color: Colors.black),),
       ),
-      body: StreamBuilder<List<BookedCustomerModel>>(
+      body: StreamBuilder<QuerySnapshot>(
         stream: storeServices.getAllBookedCustomers(bookedDoc.reference.path),
         builder: (context, snapshot2) {
           switch (snapshot2.connectionState) {
@@ -30,32 +33,33 @@ class BookedCustomersPage extends StatelessWidget {
               break;
             case ConnectionState.active:
               // TODO: Handle this case.
-              List<BookedCustomerModel> bookedCustomers = snapshot2.data;
-              if (bookedCustomers.length > 0) {
+              print(bookedDoc.reference.path);
+              print(snapshot2.hasData);
+              if (snapshot2.hasData) {
                 return ListView.builder(
-                  itemCount: bookedCustomers.length,
+                  itemCount: snapshot2.data.documents.length,
                   itemBuilder: (context, index) {
                     return Card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          if (bookedCustomers[index].status == 'OnGoing')
+                          if (snapshot2.data.documents[index]['status'] == 'OnGoing')
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
-                                bookedCustomers[index].status,
+                                snapshot2.data.documents[index]['status'],
                                 style: TextStyle(
                                     color: Colors.green,
                                     fontWeight: FontWeight.bold),
                               ),
                             ),
-                          if (bookedCustomers[index].status == 'Completed')
+                          if (snapshot2.data.documents[index]['status'] == 'Completed')
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
-                                bookedCustomers[index].status,
+                                snapshot2.data.documents[index]['status'],
                                 style: TextStyle(
                                     color: Colors.orange,
                                     fontWeight: FontWeight.bold),
@@ -63,7 +67,7 @@ class BookedCustomersPage extends StatelessWidget {
                             ),
                           ListTile(
                               trailing:
-                                  bookedCustomers[index].status == 'OnGoing'
+                                  snapshot2.data.documents[index]['status'] == 'OnGoing'
                                       ? IconButton(
                                           icon: Icon(
                                             Icons.check,
@@ -72,22 +76,21 @@ class BookedCustomersPage extends StatelessWidget {
                                           onPressed: () async {
                                             await storeServices
                                                 .updateVisitorsStatus(
-                                                    bookedCustomers[index]
-                                                        .visitDocPath,
+                                                    snapshot2.data.documents[index]
+                                                        ['visitDocPath'],
                                                     {'status': "Completed"});
 
                                             await storeServices
                                                 .updateBookedCustomersStatus(
-                                                    bookedCustomers[index]
-                                                        .firebaseDocument
+                                                    snapshot2.data.documents[index]
                                                         .reference
                                                         .path,
                                                     {'status': "Completed"});
                                           })
                                       : SizedBox.shrink(),
-                              subtitle: Text(bookedCustomers[index].email),
+                              subtitle: Text(snapshot2.data.documents[index]['email']),
                               title: Text(
-                                  '${bookedCustomers[index].name} / Token No : ${bookedCustomers[index].tokenNo}')),
+                                  '${snapshot2.data.documents[index]['name']} / Token No : ${snapshot2.data.documents[index]['tokenNo']}')),
                         ],
                       ),
                     );

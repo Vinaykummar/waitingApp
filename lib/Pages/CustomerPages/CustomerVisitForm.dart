@@ -33,13 +33,19 @@ class CustomerVisitForm extends StatelessWidget {
       await customerServices.increaseCustomerCount(
           bookingDoc.reference.path, {'customers': present});
 
+      print(bookingDoc.reference.path);
+      print(currentUser.user.toJson());
+
       DocumentReference bookedCustomerDoc =
+
           await customerServices.addToBookedCustomersList(
               bookingDoc.reference.path, currentUser.user.toJson());
 
+
+
       await customerServices.updateBookedCustomer(bookedCustomerDoc.path, {
         'status': 'OnGoing',
-        'tokenNo': visitModel.tokenNo,
+        'tokenNo': visitModel.toJson()['tokenNo'],
         'visitDocPath': visitedDoc.path
       });
 
@@ -47,11 +53,16 @@ class CustomerVisitForm extends StatelessWidget {
         'bookingDocPath': bookingDoc.reference.path,
         'customerListPath': bookedCustomerDoc.path
       });
+
+      Navigator.of(context).pop();
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("VisitForm"),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black),
+        title: Text("VisitForm", style: TextStyle(color: Colors.black),),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),

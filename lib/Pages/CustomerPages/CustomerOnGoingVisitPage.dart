@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:stateDemo/Providers/AuthProvider.dart';
 import 'package:stateDemo/Services/CustomerServices.dart';
 
 class CustomerOnGoingVisitPage extends StatefulWidget {
@@ -147,7 +145,6 @@ class _CustomerOnGoingVisitPageState extends State<CustomerOnGoingVisitPage> {
               DocumentSnapshot bookingDoc = await widget.customerServices.getCurrentBookedDoc(widget.visitedDoc.data['bookingDocPath']);
               int present = bookingDoc.data['customers'];
               present -= 1;
-
               await widget.customerServices.decreaseCustomerCount(bookingDoc.reference.path, {'customers': present});
               await widget.customerServices.deleteVisit(widget.visitedDoc.reference.path);
             },

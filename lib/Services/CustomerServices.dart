@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:stateDemo/Helpers/timeHelpers.dart';
 import 'package:stateDemo/Models/VisitModel.dart';
 
 class CustomerServices {
@@ -8,7 +9,7 @@ class CustomerServices {
     return _firestore
         .document(path)
         .collection('visits')
-        .where('status', isEqualTo: 'OnGoing')
+        .where('status', isEqualTo: 'OnGoing').where('date', isEqualTo: TimeHelpers().todaysDate())
         .snapshots();
   }
 
@@ -22,29 +23,29 @@ class CustomerServices {
   Stream<QuerySnapshot> getStoreBookings(String path) {
     return _firestore
         .document(path)
-        .collection('bookings')
+        .collection('bookings').where('date',isEqualTo: TimeHelpers().todaysDate())
         .limit(1)
         .snapshots();
   }
 
-  Future<DocumentSnapshot> decreaseCustomerCount(
+  Future<void> decreaseCustomerCount(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<DocumentSnapshot> deleteInBookedCustomersList(String path) {
-    return Firestore.instance.document(path).delete();
+  Future<void> deleteInBookedCustomersList(String path) {
+    return _firestore.document(path).delete();
   }
 
-  Future<DocumentSnapshot> deleteVisit(String path) {
-    return Firestore.instance.document(path).delete();
+  Future<void> deleteVisit(String path) {
+    return _firestore.document(path).delete();
   }
 
   Future<DocumentSnapshot> getCurrentBookedDoc(String path) {
-    return Firestore.instance.document(path).get();
+    return _firestore.document(path).get();
   }
 
-  Future<DocumentSnapshot> increaseCustomerCount(
+  Future<void> increaseCustomerCount(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
@@ -54,14 +55,14 @@ class CustomerServices {
     return _firestore.document(path).collection('customers').add(data);
   }
 
-  Future<DocumentReference> updateBookedCustomer(
+  Future<void> updateBookedCustomer(
       String path, Map<String, dynamic> data) {
-    return _firestore.document(path).collection('customers').add(data);
+    return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<DocumentReference> updateVisitedDoc(
+  Future<void> updateVisitedDoc(
       String path, Map<String, dynamic> data) {
-    return _firestore.document(path).collection('customers').add(data);
+    return _firestore.document(path).setData(data, merge: true);
   }
 
   Future<DocumentReference> createVisit(String path, VisitModel visitModel) {
@@ -89,5 +90,12 @@ class CustomerServices {
             .map((DocumentSnapshot visitDoc) =>
                 VisitModel.fromMap(visitDoc.data, visitDoc))
             .toList());
+  }
+
+  Future<QuerySnapshot> getCustomer(String uid) {
+   return  _firestore
+        .collection('customers')
+        .where('uid', isEqualTo: uid)
+        .getDocuments();
   }
 }

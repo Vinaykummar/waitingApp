@@ -32,30 +32,23 @@ class StoreServices {
             .toList());
   }
 
-  Stream<List<BookedCustomerModel>> getAllBookedCustomers(String path) {
+  Stream<QuerySnapshot> getAllBookedCustomers(String path) {
     return _firestore
         .document(path)
         .collection('customers')
-        .orderBy('tokenNo', descending: false)
-        .snapshots()
-        .map((QuerySnapshot bookedCustomersDocs) => bookedCustomersDocs
-            .documents
-            .map((DocumentSnapshot bookedCustomersDoc) =>
-                BookedCustomerModel.fromMap(
-                    bookedCustomersDoc.data, bookedCustomersDoc))
-            .toList());
+        .snapshots();
   }
 
   Stream<DocumentSnapshot> getMystore(String path) {
     return _firestore.document(path).snapshots();
   }
 
-  Future<DocumentSnapshot> increaseCustomerCount(
+  Future<void> increaseCustomerCount(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<DocumentSnapshot> decreaseCustomerCount(
+  Future<void> decreaseCustomerCount(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
@@ -64,39 +57,39 @@ class StoreServices {
     return _firestore.document(path).collection('customers').getDocuments();
   }
 
-  Future<QuerySnapshot> updateVisitorsTokenNo(
+  Future<void> updateVisitorsTokenNo(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> updateBookedCustomersTokenNo(
+  Future<void> updateBookedCustomersTokenNo(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> updateBookingWaitingTime(
+  Future<void> updateBookingWaitingTime(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> updateBookingMessage(
+  Future<void> updateBookingMessage(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> openBooking(String path, Map<String, dynamic> data) {
+  Future<void> openBooking(String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> closeBooking(String path, Map<String, dynamic> data) {
+  Future<void> closeBooking(String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> closeStore(String path, Map<String, dynamic> data) {
+  Future<void> closeStore(String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> openStore(String path, Map<String, dynamic> data) {
+  Future<void> openStore(String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
@@ -107,12 +100,12 @@ class StoreServices {
         .add(bookingModel.toJson());
   }
 
-  Future<QuerySnapshot> updateVisitorsStatus(
+  Future<void> updateVisitorsStatus(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }
 
-  Future<QuerySnapshot> updateBookedCustomersStatus(
+  Future<void> updateBookedCustomersStatus(
       String path, Map<String, dynamic> data) {
     return _firestore.document(path).setData(data, merge: true);
   }

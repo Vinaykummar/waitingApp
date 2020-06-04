@@ -71,17 +71,13 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentUser.user.name),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(currentUser.user.name, style: TextStyle(color: Colors.black),),
         actions: <Widget>[
-          IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () async {
 
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => CustomerStoreSearchPage()));
-              }),
           IconButton(
-              icon: Icon(Icons.exit_to_app),
+              icon: Icon(Icons.exit_to_app, color: Colors.black,),
               onPressed: () async {
                 await auth.signOut();
                 sharedPreferences = await SharedPreferences.getInstance();
@@ -110,11 +106,9 @@ class _HomePageState extends State<HomePage> {
               break;
             case ConnectionState.done:
               // TODO: Handle this case.R
-              return Center(
-                child: currentUser.user.role == 'store'
-                    ? storeWidgets.elementAt(_selectedIndex)
-                    : cusWidgets.elementAt(_selectedIndex),
-              );
+              return currentUser.user.role == 'store'
+                  ? storeWidgets.elementAt(_selectedIndex)
+                  : cusWidgets.elementAt(_selectedIndex);
               break;
           }
           return Center(
@@ -123,10 +117,9 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.indigo,
         items: currentUser.user.role == 'store' ? storeitems : cusitems,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Colors.indigo,
         onTap: _onItemTapped,
       ),
     );
